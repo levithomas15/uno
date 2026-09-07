@@ -2,7 +2,7 @@
  * den drei Spielarten. */
 
 import { LocalDriver } from './local.js';
-import { NetClient, serverUrl } from './net.js';
+import { NetClient, serverUrl, savedServer, saveServer, sameOriginUrl, needsOwnServer } from './net.js';
 import { TableUI, openOverlay, closeOverlay, toast, escapeHtml, actorOf } from './ui.js';
 import { DEFAULT_OPTIONS } from './engine.js';
 
@@ -272,7 +272,13 @@ function netStatus(text, isError = false) {
 
 async function withNet(action) {
   if (!serverUrl()) {
-    netStatus('Für das Online-Spiel muss der mitgelieferte Server laufen: npm start, dann die Seite über http://localhost:8080 öffnen.', true);
+    netStatus('Für das Online-Spiel braucht es den mitgelieferten Server: npm start, dann die Seite über http://localhost:8080 öffnen.', true);
+    return;
+  }
+  if (needsOwnServer()) {
+    netStatus('Diese Seite wird nur statisch ausgeliefert – hier läuft kein Spielserver. '
+      + 'Trag unter „Spielserver“ die Adresse deines eigenen Servers ein.', true);
+    $('net-server-box').open = true;
     return;
   }
   netStatus('Verbinde …');
@@ -366,6 +372,43 @@ $('lobby-copy').addEventListener('click', async () => {
     prompt('Diesen Link teilen:', link);
   }
 });
+
+/* Spielserver: eigene Adresse eintragen, wenn die Seite statisch liegt. */
+function refreshServerBox() {
+  const field = $('net-server');
+  const hint = $('net-server-hint');
+  const saved = savedServer();
+  field.value = saved;
+  field.placeholder = sameOriginUrl() || 'ws://192.168.1.20:8080/ws';
+  if (saved) {
+    hint.textContent = `Gemerkt: ${saved}`;
+  } else if (needsOwnServer()) {
+    hint.textContent = 'Diese Seite liegt auf einem Hoster ohne Spielserver. Für Online-Partien '
+      + 'trag die Adresse deines eigenen Servers ein – der steckt im Ordner uno/ und startet mit npm start.';
+    $('net-server-box').open = true;
+  } else {
+    hint.textContent = `Normalerweise steht der Server dort, wo auch diese Seite liegt (${sameOriginUrl()}).`;
+  }
+}
+
+$('net-server-save').addEventListener('click', () => {
+  const value = $('net-server').value.trim();
+  if (value && !/^wss?:\/\//.test(value)) {
+    netStatus('Die Adresse fängt mit ws:// oder wss:// an.', true);
+    return;
+  }
+  saveServer(value);
+  refreshServerBox();
+  netStatus(value ? 'Adresse gemerkt.' : 'Zurückgesetzt.');
+});
+
+$('net-server-clear').addEventListener('click', () => {
+  saveServer('');
+  refreshServerBox();
+  netStatus('Zurückgesetzt.');
+});
+
+refreshServerBox();
 
 /* Beim Verlassen der Seite sauber abmelden. */
 window.addEventListener('beforeunload', () => { net?.leave(); });

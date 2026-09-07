@@ -120,6 +120,23 @@
       </div>
       <p class="status" id="net-status"></p>
     </div>
+
+    <details class="panel" id="net-server-box">
+      <summary>Spielserver</summary>
+      <p class="hint" id="net-server-hint">
+        Normalerweise steht der Server dort, wo auch diese Seite liegt.
+      </p>
+      <div class="row">
+        <div>
+          <label for="net-server">Adresse (WebSocket)</label>
+          <input id="net-server" placeholder="ws://192.168.1.20:8080/ws" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="ghost grow" id="net-server-save">Merken</button>
+        <button class="ghost" id="net-server-clear">Zurücksetzen</button>
+      </div>
+    </details>
     <div class="actions">
       <button class="ghost" data-goto="screen-menu">Zurück</button>
     </div>

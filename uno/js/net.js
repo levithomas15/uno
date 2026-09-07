@@ -4,11 +4,50 @@
  * Sicht. Dieser Client reicht Zuege weiter und meldet, was zurueckkommt.
  */
 
-export function serverUrl() {
+/* Wo steht der Spielserver?
+ *
+ * Normalerweise dort, wo auch die Seite liegt. Wird die Seite statisch
+ * ausgeliefert - etwa auf GitHub Pages -, laeuft dort kein Server: dann
+ * traegt man die Adresse einmal von Hand ein, und sie bleibt gespeichert. */
+export function savedServer() {
+  try {
+    return localStorage.getItem('uno.server') || '';
+  } catch {
+    return '';
+  }
+}
+
+export function saveServer(url) {
+  try {
+    if (url) localStorage.setItem('uno.server', url);
+    else localStorage.removeItem('uno.server');
+  } catch { /* Privater Modus: dann eben nur fuer diese Sitzung */ }
+}
+
+/* Adresse, die dieselbe Herkunft wie die Seite hat - oder null. */
+export function sameOriginUrl() {
   const loc = window.location;
   if (loc.protocol === 'file:') return null;
   const proto = loc.protocol === 'https:' ? 'wss:' : 'ws:';
   return `${proto}//${loc.host}/ws`;
+}
+
+export function serverUrl() {
+  const saved = savedServer();
+  if (saved) return saved;
+  return sameOriginUrl();
+}
+
+/* Statische Hoster koennen kein WebSocket - dort hilft nur eine eigene
+ * Adresse. Das erkennen wir an der Herkunft der Seite. */
+export function needsOwnServer() {
+  if (savedServer()) return false;
+  const host = window.location.hostname || '';
+  return window.location.protocol === 'file:'
+    || host.endsWith('github.io')
+    || host.endsWith('pages.dev')
+    || host.endsWith('netlify.app')
+    || host.endsWith('vercel.app');
 }
 
 export class NetClient {

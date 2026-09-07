@@ -217,3 +217,33 @@ for (const [count, seedBase] of [[2, 100], [4, 200], [7, 300], [10, 400]]) {
     }
   });
 }
+
+/* --------------------------------------------------- Adresse des Servers */
+
+/* Auf einem statischen Hoster (GitHub Pages) laeuft kein Spielserver.
+ * Dann muss die Seite eine eigene Adresse annehmen und behalten. */
+test('Serveradresse: eigene Angabe schlaegt die Herkunft der Seite', async () => {
+  const store = new Map();
+  globalThis.localStorage = {
+    getItem: (k) => (store.has(k) ? store.get(k) : null),
+    setItem: (k, v) => store.set(k, String(v)),
+    removeItem: (k) => store.delete(k),
+  };
+  globalThis.window = { location: { protocol: 'https:', host: 'levithomas15.github.io', hostname: 'levithomas15.github.io' } };
+
+  const net = await import('../js/net.js');
+  assert.equal(net.needsOwnServer(), true, 'auf github.io fehlt der Server');
+  assert.equal(net.serverUrl(), 'wss://levithomas15.github.io/ws');
+
+  net.saveServer('wss://uno.example.org/ws');
+  assert.equal(net.serverUrl(), 'wss://uno.example.org/ws', 'die eigene Adresse gilt');
+  assert.equal(net.needsOwnServer(), false, 'mit eigener Adresse ist alles gut');
+
+  net.saveServer('');
+  globalThis.window = { location: { protocol: 'http:', host: 'localhost:8080', hostname: 'localhost' } };
+  assert.equal(net.needsOwnServer(), false, 'ein eigener Server braucht keine Angabe');
+  assert.equal(net.serverUrl(), 'ws://localhost:8080/ws');
+
+  delete globalThis.window;
+  delete globalThis.localStorage;
+});

@@ -36,6 +36,30 @@ zurückkehren – solange die Runde läuft, spielt der Rechner ihn übergangswei
 npm test                  # 16 Prüfungen, darunter komplette Bot-Partien
 ```
 
+## Ins Netz stellen
+
+**Die Seite** (Solo und Weiterreichen, ohne Online): Der Workflow
+`.github/workflows/pages.yml` stellt den Ordner auf GitHub Pages. Einmalig
+nötig ist nur *Settings → Pages → Source: GitHub Actions*; bei einem privaten
+Repository verlangt GitHub dafür einen bezahlten Tarif – sonst das Repository
+öffentlich schalten. Danach liegt das Spiel unter
+
+```
+https://<benutzername>.github.io/uno/
+```
+
+**Online-Partien** brauchen einen laufenden Server; Pages liefert nur
+Dateien aus. Der Server ist eine einzige Node-Datei ohne Fremdpakete und
+passt auf jeden kleinen Hoster:
+
+```
+docker build -t uno . && docker run -p 8080:8080 uno
+```
+
+Wer den Server irgendwo hat, trägt seine Adresse im Spiel unter
+*Online → Spielserver* ein (`wss://…/ws`) – sie bleibt gespeichert. Läuft die
+Seite ohnehin auf demselben Server, ist nichts einzutragen.
+
 ## Die Regeln
 
 108 Karten: je Farbe eine 0, je zwei 1–9, zwei Aussetzen, zwei Retour und zwei

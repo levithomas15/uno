@@ -9,6 +9,10 @@ Zwei getrennte Projekte:
 * **[index.html](index.html)** – „Wer findet mich?“, die Seite zur
   Selbstauskunft. Beschreibung unten.
 
+Das Spiel wird über [`.github/workflows/pages.yml`](.github/workflows/pages.yml)
+auf GitHub Pages gestellt: `https://<benutzername>.github.io/uno/`. Dafür muss
+in *Settings → Pages* als Quelle „GitHub Actions“ eingestellt sein.
+
 ---
 
 # Wer findet mich?
