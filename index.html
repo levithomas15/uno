@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Wer findet mich? – Selbstauskunft für dein eigenes Gesicht</title>
+<meta name="description" content="Prüfe im Browser, wo dein eigenes Foto im Netz auftaucht – und lass Treffer löschen. Ohne Upload.">
+<link rel="stylesheet" href="assets/styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔎</text></svg>">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <p class="eyebrow">Selbstauskunft</p>
+    <h1>Wo taucht <em>mein</em> Gesicht im Netz auf?</h1>
+    <p class="lede">
+      Lade ein Foto von dir, schneide dein Gesicht zu und starte die Rückwärts-Bildersuche
+      bei den großen Suchmaschinen. Dein Bild bleibt dabei auf deinem Gerät –
+      es wird nirgendwohin hochgeladen.
+    </p>
+    <p class="scope-note">
+      <strong>Nur für dich selbst.</strong> Dieses Werkzeug ist dafür da, die eigene Sichtbarkeit zu prüfen
+      und Treffer entfernen zu lassen. Fremde Menschen anhand eines Fotos zu identifizieren ist etwas anderes –
+      dafür ist es nicht gebaut. <a href="#recht">Warum das wichtig ist</a>
+    </p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- 1 ------------------------------------------------------------------ -->
+  <section class="step" id="step-bild">
+    <h2><span class="num">1</span> Foto auswählen</h2>
+
+    <div class="tabs" role="tablist">
+      <button class="tab is-active" role="tab" aria-selected="true" data-tab="datei">Datei vom Gerät</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="url">Bild-Adresse (URL)</button>
+    </div>
+
+    <div class="tabpanel is-active" data-panel="datei">
+      <div class="dropzone" id="dropzone" tabindex="0" role="button"
+           aria-label="Foto auswählen oder hierher ziehen">
+        <svg viewBox="0 0 24 24" aria-hidden="true" class="dz-icon">
+          <path d="M12 16V4m0 0L8 8m4-4 4 4M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"
+                fill="none" stroke="currentColor" stroke-width="1.6"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <p class="dz-main">Foto hierher ziehen oder klicken</p>
+        <p class="dz-sub">JPG, PNG, WebP · bleibt lokal im Browser</p>
+        <input type="file" id="fileInput" accept="image/*" hidden>
+      </div>
+    </div>
+
+    <div class="tabpanel" data-panel="url">
+      <label class="field">
+        <span>Direkte Adresse eines Bildes, das dich zeigt</span>
+        <input type="url" id="urlInput" placeholder="https://example.com/mein-foto.jpg" spellcheck="false">
+      </label>
+      <button class="btn" id="urlLoad">Bild laden</button>
+      <p class="hint">
+        Mit einer URL können die Suchmaschinen direkt losschicken – das ist der bequemere Weg.
+        Bei einer lokalen Datei musst du sie im jeweiligen Dienst selbst ablegen (Anleitung folgt in Schritt&nbsp;3).
+      </p>
+    </div>
+
+    <p class="error" id="loadError" hidden></p>
+  </section>
+
+  <!-- 2 ------------------------------------------------------------------ -->
+  <section class="step" id="step-crop" hidden>
+    <h2><span class="num">2</span> Auf dein Gesicht zuschneiden</h2>
+    <p class="step-lede">
+      Ein enger Ausschnitt liefert deutlich bessere Treffer als ein Ganzkörperbild mit Hintergrund.
+      Rahmen verschieben, an den Ecken ziehen zum Vergrößern.
+    </p>
+
+    <div class="cropper">
+      <div class="canvas-stage" id="stage">
+        <canvas id="canvas"></canvas>
+        <div class="crop-box" id="cropBox">
+          <span class="handle nw" data-handle="nw"></span>
+          <span class="handle ne" data-handle="ne"></span>
+          <span class="handle sw" data-handle="sw"></span>
+          <span class="handle se" data-handle="se"></span>
+        </div>
+      </div>
+
+      <aside class="crop-side">
+        <p class="preview-label">Vorschau</p>
+        <div class="preview-frame"><canvas id="preview"></canvas></div>
+        <p class="preview-meta" id="previewMeta"></p>
+
+        <div class="crop-actions">
+          <button class="btn btn-ghost" id="cropReset">Ganzes Bild</button>
+          <button class="btn btn-ghost" id="cropSquare">Quadrat</button>
+        </div>
+        <div class="crop-actions">
+          <button class="btn btn-ghost" id="btnCopy">Kopieren</button>
+          <button class="btn btn-ghost" id="btnDownload">Speichern</button>
+        </div>
+        <p class="hint" id="copyStatus" role="status"></p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- 3 ------------------------------------------------------------------ -->
+  <section class="step" id="step-suche" hidden>
+    <h2><span class="num">3</span> Suche starten</h2>
+
+    <label class="consent">
+      <input type="checkbox" id="consent">
+      <span>
+        Ich bestätige: Das Foto zeigt <strong>mich selbst</strong> – oder eine Person, die mich
+        ausdrücklich damit beauftragt hat.
+      </span>
+    </label>
+
+    <div class="engines" id="engines" aria-disabled="true">
+      <a class="engine" data-engine="lens" href="#" target="_blank" rel="noopener noreferrer">
+        <span class="engine-name">Google Lens</span>
+        <span class="engine-desc">Die größte Reichweite. Meist der wichtigste Treffer-Lieferant.</span>
+      </a>
+      <a class="engine" data-engine="bing" href="#" target="_blank" rel="noopener noreferrer">
+        <span class="engine-name">Bing Visual Search</span>
+        <span class="engine-desc">Findet oft anderes als Google – lohnt sich zusätzlich.</span>
+      </a>
+      <a class="engine" data-engine="yandex" href="#" target="_blank" rel="noopener noreferrer">
+        <span class="engine-name">Yandex Bilder</span>
+        <span class="engine-desc">Bei Gesichtern erfahrungsgemäß am gründlichsten.</span>
+      </a>
+      <a class="engine" data-engine="tineye" href="#" target="_blank" rel="noopener noreferrer">
+        <span class="engine-name">TinEye</span>
+        <span class="engine-desc">Zeigt, seit wann und wo genau ein Bild kursiert.</span>
+      </a>
+    </div>
+
+    <div class="callout" id="fileHint" hidden>
+      <h3>So geht’s mit einer lokalen Datei</h3>
+      <ol>
+        <li>Oben auf <strong>„Kopieren“</strong> oder <strong>„Speichern“</strong> klicken.</li>
+        <li>Suchdienst über die Kachel öffnen – er startet mit dem Upload-Feld.</li>
+        <li>Bild dort einfügen (<kbd>Strg</kbd>+<kbd>V</kbd> bzw. <kbd>⌘</kbd>+<kbd>V</kbd>) oder hineinziehen.</li>
+      </ol>
+      <p class="hint">
+        Suchmaschinen dürfen aus Sicherheitsgründen nicht auf Dateien deiner Festplatte zugreifen –
+        diesen einen Schritt musst du selbst machen.
+      </p>
+    </div>
+
+    <div class="callout" id="urlHint" hidden>
+      <h3>Bereit</h3>
+      <p>Die Kacheln übergeben deine Bild-Adresse direkt an den jeweiligen Dienst. Jede öffnet einen neuen Tab.</p>
+      <p class="hint">
+        Hinweis: Ausschnitt und Zuschnitt aus Schritt&nbsp;2 wirken sich hier nicht aus –
+        gesucht wird das Bild unter der Adresse. Für einen Gesichts-Zuschnitt lade das
+        zugeschnittene Bild herunter und nutze den Datei-Weg.
+      </p>
+    </div>
+
+    <div class="callout callout-quiet">
+      <h3>Was du beim Durchsehen notieren solltest</h3>
+      <p>Für jeden Treffer: die genaue Adresse der Seite, die Adresse des Bildes und das Datum.
+      Genau diese drei Angaben brauchst du gleich für den Löschantrag.</p>
+    </div>
+  </section>
+
+  <!-- 4 ------------------------------------------------------------------ -->
+  <section class="step" id="step-loeschen">
+    <h2><span class="num">4</span> Treffer entfernen lassen</h2>
+
+    <div class="cards">
+      <article class="card">
+        <h3>Direkt beim Seitenbetreiber</h3>
+        <p>Der wirksamste Weg: Verschwindet das Bild an der Quelle, fällt es aus allen Suchmaschinen.
+        Impressum oder Kontaktadresse suchen und schriftlich widersprechen.</p>
+        <p class="card-note">Rechtsgrundlage in der EU: Art.&nbsp;17 DSGVO (Löschung) sowie
+        §&nbsp;22 KUG (Recht am eigenen Bild).</p>
+      </article>
+      <article class="card">
+        <h3>Aus dem Suchindex</h3>
+        <p>Reagiert die Quelle nicht, kannst du den Eintrag bei den Suchmaschinen auslisten lassen.</p>
+        <ul class="link-list">
+          <li><a href="https://support.google.com/websearch/troubleshooter/3111061" target="_blank" rel="noopener noreferrer">Google – Ergebnisse entfernen</a></li>
+          <li><a href="https://www.bing.com/webmasters/tools/contentremoval" target="_blank" rel="noopener noreferrer">Bing – Inhalte entfernen</a></li>
+          <li><a href="https://yandex.com/support/search/troubleshooting/delete-page.html" target="_blank" rel="noopener noreferrer">Yandex – Seite entfernen</a></li>
+        </ul>
+      </article>
+      <article class="card">
+        <h3>Wenn es ernst wird</h3>
+        <p>Bei intimen Aufnahmen, Fälschungen oder anhaltender Belästigung: Beweise sichern
+        (Screenshot mit sichtbarer Adresse und Datum) und Anzeige erstatten.</p>
+        <ul class="link-list">
+          <li><a href="https://stopncii.org/" target="_blank" rel="noopener noreferrer">StopNCII.org – gegen die Verbreitung intimer Bilder</a></li>
+          <li><a href="https://www.bfdi.bund.de/" target="_blank" rel="noopener noreferrer">Datenschutzbeauftragte des Bundes</a></li>
+        </ul>
+      </article>
+    </div>
+
+    <details class="generator">
+      <summary><strong>Musterschreiben erzeugen</strong> – Löschverlangen an einen Seitenbetreiber</summary>
+      <div class="gen-grid">
+        <label class="field"><span>Dein Name</span><input type="text" id="gName" placeholder="Vor- und Nachname"></label>
+        <label class="field"><span>Adresse der Seite</span><input type="url" id="gPage" placeholder="https://…"></label>
+        <label class="field"><span>Adresse des Bildes</span><input type="url" id="gImage" placeholder="https://…/bild.jpg"></label>
+        <label class="field"><span>Frist</span>
+          <select id="gDays"><option value="7">7 Tage</option><option value="14" selected>14 Tage</option><option value="30">30 Tage</option></select>
+        </label>
+      </div>
+      <textarea id="gOut" rows="16" spellcheck="false" readonly></textarea>
+      <button class="btn" id="gCopy">Text kopieren</button>
+      <p class="hint" id="gStatus" role="status"></p>
+      <p class="hint">Vorlage, keine Rechtsberatung. Bei ernsten Fällen lohnt sich anwaltliche Hilfe.</p>
+    </details>
+  </section>
+
+  <!-- 5 ------------------------------------------------------------------ -->
+  <section class="step" id="step-schutz">
+    <h2><span class="num">5</span> Weniger auffindbar werden</h2>
+    <ul class="checklist" id="checklist">
+      <li><label><input type="checkbox" data-key="c1"> Profilbilder auf privat stellen – bei den meisten Diensten sind sie standardmäßig öffentlich.</label></li>
+      <li><label><input type="checkbox" data-key="c2"> Alte, ungenutzte Konten löschen statt nur abmelden.</label></li>
+      <li><label><input type="checkbox" data-key="c3"> Markierungen in Fotos anderer Leute entfernen lassen.</label></li>
+      <li><label><input type="checkbox" data-key="c4"> Suchmaschinen-Indexierung des eigenen Profils abschalten, wo der Dienst das anbietet.</label></li>
+      <li><label><input type="checkbox" data-key="c5"> Bei Gesichtssuchdiensten (z.&nbsp;B. PimEyes) den Opt-out für die eigene Person beantragen.</label></li>
+      <li><label><input type="checkbox" data-key="c6"> Diese Prüfung alle paar Monate wiederholen – das Netz ändert sich.</label></li>
+    </ul>
+    <p class="hint">Häkchen werden nur in diesem Browser gespeichert.</p>
+  </section>
+
+  <!-- ------------------------------------------------------------------- -->
+  <section class="step" id="recht">
+    <h2>Warum dieses Werkzeug nur die eigene Person sucht</h2>
+    <p>
+      Dieselbe Technik lässt sich in zwei Richtungen einsetzen. Die eine: herausfinden, was über einen
+      selbst im Umlauf ist, und es löschen lassen. Die andere: eine fremde Person auf der Straße
+      fotografieren und ihren Namen, ihre Konten, ihren Wohnort ermitteln. Das Zweite ist der Werkzeugkasten
+      von Stalking und Doxxing – und in der EU ohne Einwilligung schlicht verboten
+      (Art.&nbsp;9 DSGVO stuft biometrische Daten als besonders schützenswert ein).
+    </p>
+    <p>
+      Deshalb durchsucht diese Seite keine Plattformen im Hintergrund, legt keine Gesichtsdatenbank an
+      und speichert nichts. Sie übergibt genau ein Bild an öffentliche Suchmaschinen – auf deinen Klick hin,
+      für dein eigenes Gesicht.
+    </p>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>Läuft vollständig im Browser. Kein Server, keine Konten, keine Protokolle.</p>
+  </div>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>
