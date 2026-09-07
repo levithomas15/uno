@@ -43,6 +43,8 @@ button {
 }
 button:active { transform: scale(.97); }
 button:disabled { opacity: .4; cursor: not-allowed; }
+/* Der Nachziehstapel bleibt sichtbar, auch wenn man nicht ziehen darf. */
+#draw-pile:disabled { opacity: .85; }
 button.primary { background: var(--yellow); color: #1a1400; font-weight: 700; }
 button.danger  { background: var(--red); color: #fff; font-weight: 700; }
 button.ghost   { background: transparent; box-shadow: inset 0 0 0 1.5px var(--line); }

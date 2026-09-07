@@ -42,17 +42,20 @@ function skipGlyph(color, scale, stroke) {
 
 /* Retour: zwei gegenlaeufige Pfeile. */
 function reverseGlyph(color, scale) {
-  return `<g transform="scale(${scale})" fill="${color}">
-    <path d="M -13 6 L -2 6 L -2 12 L -14 3 L -2 -6 L -2 0 L -13 0 Z" transform="rotate(-25)"/>
-    <path d="M 13 -6 L 2 -6 L 2 -12 L 14 -3 L 2 6 L 2 0 L 13 0 Z" transform="rotate(-25)"/>
+  const arrow = '<path d="M -3.5 11 L -3.5 -3 L -8.5 -3 L 0 -13 L 8.5 -3 L 3.5 -3 L 3.5 11 Z"/>';
+  return `<g transform="scale(${scale}) rotate(20)" fill="${color}">
+    <g transform="translate(-8 0)">${arrow}</g>
+    <g transform="translate(8 0) rotate(180)">${arrow}</g>
   </g>`;
 }
 
 /* Zieh Zwei: zwei versetzte Karten. */
 function drawTwoGlyph(color, scale) {
   return `<g transform="scale(${scale})">
-    <rect x="-13" y="-14" width="16" height="24" rx="3" fill="#ffffff" stroke="${color}" stroke-width="2.5"/>
-    <rect x="-3" y="-8" width="16" height="24" rx="3" fill="${color}" stroke="#ffffff" stroke-width="2.5"/>
+    <rect x="-14" y="-13" width="17" height="25" rx="3" fill="${color}" stroke="#ffffff" stroke-width="2.5"
+      transform="rotate(-10 -5.5 -0.5)"/>
+    <rect x="-3" y="-13" width="17" height="25" rx="3" fill="${color}" stroke="#ffffff" stroke-width="2.5"
+      transform="rotate(10 5.5 -0.5)"/>
   </g>`;
 }
 
@@ -98,10 +101,8 @@ function cornerGlyph(card) {
   switch (card.kind) {
     case 'skip':    return skipGlyph('#ffffff', 0.55, 7);
     case 'reverse': return reverseGlyph('#ffffff', 0.5);
-    case 'draw2':   return `<g transform="scale(0.42)">
-        <rect x="-11" y="-13" width="15" height="22" rx="3" fill="#ffffff"/>
-        <rect x="-2" y="-7" width="15" height="22" rx="3" fill="#ffffff" stroke="${CARD_COLORS[card.color]}" stroke-width="3"/>
-      </g>`;
+    case 'draw2':   return `<text x="0" y="0" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="26" fill="#ffffff">+2</text>`;
     case 'wild':    return wildGlyph(0.6);
     case 'wild4':   return `<g transform="scale(0.85)"><text x="0" y="0" text-anchor="middle" dominant-baseline="central"
         font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="26" fill="#ffffff">+4</text></g>`;
@@ -119,8 +120,8 @@ export function cardSvg(card) {
 
   const centre = isNum
     ? `<text x="0" y="4" text-anchor="middle" dominant-baseline="central"
-         font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="96"
-         fill="${base}" stroke="${shade}" stroke-width="2" paint-order="stroke">${esc(card.kind)}</text>`
+         font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="80"
+         fill="${base}" stroke="${shade}" stroke-width="1.5" paint-order="stroke">${esc(card.kind)}</text>`
     : glyph;
 
   return `<svg class="card-face" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">

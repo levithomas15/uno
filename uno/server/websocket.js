@@ -7,7 +7,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 
-const GUID = '258EAFA5-E914-47DA-95CA-5AB0DC85B11D';
+const GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 const MAX_MESSAGE = 1 << 20; // 1 MiB reicht fuer jeden Spielstand
 
 export class Connection extends EventEmitter {
