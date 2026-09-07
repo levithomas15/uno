@@ -11,7 +11,7 @@ export const COLORS = ['red', 'yellow', 'green', 'blue'];
 export const COLOR_NAMES = {
   red: 'Rot',
   yellow: 'Gelb',
-  green: 'Gruen',
+  green: 'Grün',
   blue: 'Blau',
 };
 

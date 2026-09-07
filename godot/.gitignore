@@ -1,0 +1,4 @@
+# Godot legt hier seinen Import-Zwischenspeicher ab.
+.godot/
+export_presets.cfg
+*.translation

@@ -244,6 +244,7 @@ export class Room {
     if (actor === null) return;
 
     const player = this.players[actor];
+    if (!player) return;
     if (player.isBot) {
       this.timer = setTimeout(() => this.autoMove(actor), BOT_DELAY);
       return;
@@ -404,7 +405,8 @@ export function dropConnection(conn, session, deliberate) {
   player.connected = false;
 
   if (room.started) {
-    if (deliberate) room.remove(player.id);
+    // Der Platz bleibt bestehen: im Spielstand haengen alle Zuege an seinem
+    // Index. Wer geht, wird bis zum Rundenende vom Rechner vertreten.
     room.syncConnected();
     room.broadcast({
       t: 'toast',
@@ -418,7 +420,7 @@ export function dropConnection(conn, session, deliberate) {
   }
 
   const humansLeft = room.players.some((p) => !p.isBot && p.connected);
-  if (room.players.length === 0 || (!humansLeft && !room.started)) {
+  if (room.players.length === 0 || !humansLeft) {
     room.close('Der Raum ist leer.');
     return;
   }

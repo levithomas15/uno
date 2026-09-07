@@ -1,3 +1,16 @@
+# Dieses Repository
+
+Zwei getrennte Projekte:
+
+* **[uno/](uno/)** – UNO mit den Originalkarten: allein gegen Bots,
+  abwechselnd auf einem Handy oder online zu 2 bis 10. Läuft im Browser.
+* **[godot/](godot/)** – dasselbe Spiel als Godot-Projekt (Godot 4.3), das
+  sich denselben Online-Server teilt.
+* **[index.html](index.html)** – „Wer findet mich?“, die Seite zur
+  Selbstauskunft. Beschreibung unten.
+
+---
+
 # Wer findet mich?
 
 Eine Webseite zur **Selbstauskunft**: Prüfe, wo dein eigenes Gesicht im Netz
