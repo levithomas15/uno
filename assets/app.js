@@ -127,7 +127,6 @@
   const stage = $('#stage');
   const cropBox = $('#cropBox');
   const preview = $('#preview');
-  const pctx = preview.getContext('2d');
 
   const MAX_W = 620;
   const MIN_W = 320;   // sehr kleine Bilder zum Zuschneiden vergrößert anzeigen
@@ -173,16 +172,23 @@
     renderPreview();
   }
 
+  // Die Vorschau ist ein echtes <img>: So funktioniert auch der Rechtsklick
+  // zum Speichern oder Kopieren. Neu gezeichnet wird höchstens einmal pro Bild.
+  let previewPending = false;
+
   function renderPreview() {
     const c = state.crop, s = state.scale;
-    const sw = Math.round(c.w * s), sh = Math.round(c.h * s);
-    const max = 300;
-    const k = Math.min(1, max / Math.max(sw, sh));
-    preview.width = Math.max(1, Math.round(sw * k));
-    preview.height = Math.max(1, Math.round(sh * k));
-    pctx.drawImage(state.img, Math.round(c.x * s), Math.round(c.y * s), sw, sh,
-                   0, 0, preview.width, preview.height);
-    $('#previewMeta').textContent = `${sw} × ${sh} px`;
+    $('#previewMeta').textContent = `${Math.round(c.w * s)} × ${Math.round(c.h * s)} px`;
+    if (previewPending) return;
+    previewPending = true;
+    requestAnimationFrame(() => {
+      previewPending = false;
+      try {
+        preview.src = croppedCanvas(1024).toDataURL('image/png');
+      } catch {
+        preview.removeAttribute('src');   // fremdes Bild ohne CORS-Freigabe
+      }
+    });
   }
 
   // Verschieben und Größe ändern per Zeiger.
@@ -232,13 +238,16 @@
 
   /* ------------------------------------------- Ausschnitt exportieren */
 
-  function croppedCanvas() {
+  function croppedCanvas(maxSide) {
     const c = state.crop, s = state.scale;
+    const sw = Math.max(1, Math.round(c.w * s));
+    const sh = Math.max(1, Math.round(c.h * s));
+    const k = maxSide ? Math.min(1, maxSide / Math.max(sw, sh)) : 1;
     const out = document.createElement('canvas');
-    out.width = Math.max(1, Math.round(c.w * s));
-    out.height = Math.max(1, Math.round(c.h * s));
+    out.width = Math.max(1, Math.round(sw * k));
+    out.height = Math.max(1, Math.round(sh * k));
     out.getContext('2d').drawImage(
-      state.img, Math.round(c.x * s), Math.round(c.y * s), out.width, out.height,
+      state.img, Math.round(c.x * s), Math.round(c.y * s), sw, sh,
       0, 0, out.width, out.height);
     return out;
   }
@@ -265,19 +274,46 @@
     }
   });
 
-  $('#btnDownload').addEventListener('click', async () => {
-    try {
-      const blob = await toBlob(croppedCanvas());
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'mein-gesicht.png';
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      say('Gespeichert.');
-    } catch {
-      say('Der Ausschnitt lässt sich nicht speichern (fremder Server ohne Freigabe).');
+  // Wo die Seite eingebettet läuft, darf sie nicht selbst herunterladen –
+  // dort übernimmt die Plattform das Speichern, sonst der klassische Link.
+  let downloadHost;
+  const getDownloadHost = () => {
+    if (downloadHost === undefined) {
+      downloadHost = window.claude && window.claude.use
+        ? window.claude.use('downloads').catch(() => null)
+        : Promise.resolve(null);
     }
+    return downloadHost;
+  };
+
+  $('#btnDownload').addEventListener('click', async () => {
+    let blob;
+    try {
+      blob = await toBlob(croppedCanvas());
+    } catch {
+      return say('Der Ausschnitt lässt sich nicht speichern (fremder Server ohne Freigabe).');
+    }
+
+    const host = await getDownloadHost();
+    if (host) {
+      try {
+        await host.save({ filename: 'mein-gesicht.png', data: blob });
+        say('Gespeichert.');
+      } catch (err) {
+        say(err && err.code === 'declined'
+          ? 'Abgebrochen.'
+          : 'Speichern nicht möglich – nutze den Rechtsklick auf die Vorschau.');
+      }
+      return;
+    }
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mein-gesicht.png';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    say('Gespeichert.');
   });
 
   /* ----------------------------------------------------------- Suche */
