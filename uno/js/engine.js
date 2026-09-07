@@ -330,6 +330,12 @@ export function applyAction(state, playerIdx, action) {
   const player = state.players[playerIdx];
   if (!player) return fail('Unbekannte Person.');
 
+  // Das Zeitfenster fuers Erwischen endet, sobald die betroffene Person
+  // wieder selbst am Zug ist.
+  if (state.unoVulnerable === playerIdx && (action.type === 'play' || action.type === 'draw')) {
+    state.unoVulnerable = null;
+  }
+
   switch (action.type) {
     case 'uno':      return actUno(state, playerIdx);
     case 'catch':    return actCatch(state, playerIdx, action);

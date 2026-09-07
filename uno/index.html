@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>UNO – zu zweit bis zehnt, am Handy oder online</title>
+<meta name="description" content="UNO mit den Originalkarten und Originalregeln: allein gegen Bots, abwechselnd auf einem Handy oder online zu 2 bis 10.">
+<meta name="theme-color" content="#1b5e3a">
+<link rel="stylesheet" href="css/uno.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%23d8232f'/><text x='50' y='68' font-size='42' font-family='Arial Black,Arial' font-weight='900' fill='%23f7c800' text-anchor='middle'>UNO</text></svg>">
+</head>
+<body>
+
+<!-- ================================================================ Start -->
+<section class="screen is-active" id="screen-menu">
+  <div class="wrap">
+    <div class="brand">
+      <span class="logo">UNO</span>
+      <p>Die Originalkarten, die Originalregeln. Spiel allein gegen den Rechner,
+         reich das Handy reihum weiter oder tritt zu zehnt online an.</p>
+    </div>
+
+    <div class="modes">
+      <button class="mode" data-goto="screen-solo">
+        <span class="icon" aria-hidden="true">🤖</span>
+        <span><strong>Allein gegen Bots</strong><span>1 bis 9 Gegner, drei Spielstärken</span></span>
+      </button>
+      <button class="mode" data-goto="screen-pass">
+        <span class="icon" aria-hidden="true">📱</span>
+        <span><strong>Abwechselnd auf einem Handy</strong><span>Reihum weiterreichen, Hand bleibt verdeckt</span></span>
+      </button>
+      <button class="mode" data-goto="screen-online">
+        <span class="icon" aria-hidden="true">🌐</span>
+        <span><strong>Online zu 2 bis 10</strong><span>Raum eröffnen, Code teilen, losspielen</span></span>
+      </button>
+      <button class="mode" id="btn-rules">
+        <span class="icon" aria-hidden="true">📖</span>
+        <span><strong>Die Regeln</strong><span>Karten, Zugfolge, Punkte</span></span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================= Solo -->
+<section class="screen" id="screen-solo">
+  <div class="wrap">
+    <h1>Allein gegen Bots</h1>
+    <div class="panel">
+      <div class="row two">
+        <div>
+          <label for="solo-name">Dein Name</label>
+          <input id="solo-name" maxlength="14" value="Du" autocomplete="nickname">
+        </div>
+        <div>
+          <label for="solo-bots">Gegner</label>
+          <select id="solo-bots"></select>
+        </div>
+      </div>
+      <div>
+        <label for="solo-level">Spielstärke</label>
+        <select id="solo-level">
+          <option value="easy">Leicht – spielt drauflos</option>
+          <option value="normal" selected>Normal – achtet auf Farben</option>
+          <option value="hard">Schwer – zählt mit und zweifelt an</option>
+        </select>
+      </div>
+    </div>
+    <div class="panel" data-options></div>
+    <div class="actions">
+      <button class="ghost" data-goto="screen-menu">Zurück</button>
+      <button class="primary grow" id="solo-start">Spiel starten</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================= Pass &amp; Play -->
+<section class="screen" id="screen-pass">
+  <div class="wrap">
+    <h1>Abwechselnd auf einem Handy</h1>
+    <p class="hint">Das Gerät wandert reihum. Zwischen zwei Zügen wird die Hand
+       verdeckt, damit niemand mitliest.</p>
+    <div class="panel">
+      <label for="pass-count">Wie viele spielen mit?</label>
+      <select id="pass-count"></select>
+      <div class="names" id="pass-names" style="margin-top:.9rem"></div>
+      <p class="hint">Jeder Platz lässt sich auf „Bot“ stellen – so kannst du
+         auch zu dritt gegen zwei Computergegner spielen.</p>
+    </div>
+    <div class="panel" data-options></div>
+    <div class="actions">
+      <button class="ghost" data-goto="screen-menu">Zurück</button>
+      <button class="primary grow" id="pass-start">Spiel starten</button>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== Online -->
+<section class="screen" id="screen-online">
+  <div class="wrap">
+    <h1>Online spielen</h1>
+    <div class="panel">
+      <div class="row">
+        <div>
+          <label for="net-name">Dein Name</label>
+          <input id="net-name" maxlength="14" placeholder="Name" autocomplete="nickname">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="primary grow" id="net-create">Raum eröffnen</button>
+      </div>
+      <hr style="border:0;border-top:1px solid var(--line);margin:1.1rem 0">
+      <div class="row two">
+        <div>
+          <label for="net-code">Raum-Code</label>
+          <input id="net-code" maxlength="4" placeholder="ABCD" autocapitalize="characters" autocomplete="off">
+        </div>
+        <div style="align-self:end">
+          <button class="grow" id="net-join" style="width:100%">Beitreten</button>
+        </div>
+      </div>
+      <p class="status" id="net-status"></p>
+    </div>
+    <div class="actions">
+      <button class="ghost" data-goto="screen-menu">Zurück</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ Lobby -->
+<section class="screen" id="screen-lobby">
+  <div class="wrap">
+    <h1>Warteraum</h1>
+    <div class="panel">
+      <p class="hint" style="margin-bottom:.4rem">Diesen Code weitergeben:</p>
+      <p class="code" id="lobby-code">----</p>
+      <div class="actions">
+        <button class="ghost grow" id="lobby-copy">Einladungslink kopieren</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Am Tisch</h2>
+      <ul class="lobby-list" id="lobby-players"></ul>
+      <div class="actions" id="lobby-host-tools" hidden>
+        <button class="ghost" id="lobby-addbot">Bot hinzufügen</button>
+        <button class="ghost" id="lobby-rmbot">Bot entfernen</button>
+      </div>
+    </div>
+    <div class="panel" data-options id="lobby-options"></div>
+    <p class="status" id="lobby-status"></p>
+    <div class="actions">
+      <button class="ghost" id="lobby-leave">Verlassen</button>
+      <button class="primary grow" id="lobby-start">Spiel starten</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ Tisch -->
+<section class="screen" id="screen-game">
+  <div class="table">
+    <div class="topbar">
+      <span class="title" id="game-title">UNO</span>
+      <button class="ghost" id="game-log-btn">Verlauf</button>
+      <button class="ghost" id="game-quit">Beenden</button>
+    </div>
+    <div class="opponents" id="opponents"></div>
+    <div class="board">
+      <div class="colorring" id="colorring" aria-label="Aktive Farbe">
+        <i class="red"></i><i class="yellow"></i><i class="green"></i><i class="blue"></i>
+      </div>
+      <div class="piles">
+        <div class="pile">
+          <button class="card big" id="draw-pile" aria-label="Karte ziehen"></button>
+          <span class="stack-note" id="draw-note"></span>
+        </div>
+        <div class="pile">
+          <div class="card big" id="discard-pile"></div>
+          <span class="stack-note" id="discard-note"></span>
+        </div>
+      </div>
+      <p class="turn-note" id="turn-note"></p>
+    </div>
+    <div class="handbar">
+      <div class="controls" id="controls"></div>
+      <div class="hand" id="hand"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================= Overlays -->
+<div class="overlay" id="ov-color">
+  <div class="sheet">
+    <h2>Farbe wünschen</h2>
+    <p>Welche Farbe soll weitergehen?</p>
+    <div class="swatches">
+      <button class="swatch red" data-color="red">Rot</button>
+      <button class="swatch yellow" data-color="yellow">Gelb</button>
+      <button class="swatch green" data-color="green">Grün</button>
+      <button class="swatch blue" data-color="blue">Blau</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ov-challenge">
+  <div class="sheet">
+    <h2>Zieh Vier anzweifeln?</h2>
+    <p id="challenge-text"></p>
+    <div class="actions">
+      <button class="grow" id="challenge-no">Annehmen (4 ziehen)</button>
+      <button class="danger grow" id="challenge-yes">Anzweifeln</button>
+    </div>
+    <p class="hint">Zu Recht angezweifelt zieht die andere Person 4 – zu Unrecht
+       ziehst du 6 und setzt aus.</p>
+  </div>
+</div>
+
+<div class="overlay" id="ov-handoff">
+  <div class="sheet">
+    <h2 id="handoff-name">Weitergeben</h2>
+    <p id="handoff-text">Gib das Handy weiter.</p>
+    <div class="actions"><button class="primary grow" id="handoff-ok">Ich bin dran</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="ov-round">
+  <div class="sheet">
+    <h2 id="round-title">Runde vorbei</h2>
+    <p id="round-text"></p>
+    <table class="scores" id="round-scores"></table>
+    <div class="actions">
+      <button class="ghost" id="round-quit">Zum Menü</button>
+      <button class="primary grow" id="round-next">Weiter</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ov-log">
+  <div class="sheet">
+    <h2>Verlauf</h2>
+    <div class="log" id="log-body"></div>
+    <div class="actions"><button class="primary grow" data-close>Schließen</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="ov-rules">
+  <div class="sheet">
+    <h2>Die Regeln</h2>
+    <div class="rules">
+      <h3>Karten</h3>
+      <p>108 Karten: je Farbe eine 0, je zwei 1 bis 9, zwei Aussetzen, zwei
+         Retour und zwei Zieh-Zwei, dazu vier Farbwunsch- und vier Zieh-Vier-Karten.</p>
+      <h3>Ablauf</h3>
+      <ul>
+        <li>Jede Person bekommt 7 Karten, eine Karte wird aufgedeckt.</li>
+        <li>Gelegt wird, was in Farbe oder Zeichen passt; Wunschkarten passen immer.</li>
+        <li>Wer nichts legen kann, zieht eine Karte und darf sie sofort spielen.</li>
+        <li>Zu zweit wirkt Retour wie Aussetzen.</li>
+        <li>Zieh-Vier ist nur erlaubt, wenn keine Karte der aktiven Farbe auf der
+            Hand liegt – die nächste Person darf das anzweifeln.</li>
+      </ul>
+      <h3>UNO!</h3>
+      <p>Wer die vorletzte Karte legt, ruft „UNO!“. Vergessen und erwischt heißt
+         zwei Strafkarten.</p>
+      <h3>Punkte</h3>
+      <p>Wer zuerst alle Karten los ist, bekommt die Handkarten der anderen
+         gutgeschrieben: Zahlen ihren Wert, Aktionskarten 20, Wunschkarten 50.
+         Gewonnen hat, wer zuerst 500 Punkte erreicht.</p>
+      <p class="hint">Dies ist eine private Umsetzung der Regeln. UNO ist eine
+         Marke von Mattel; dieses Projekt gehört nicht zu Mattel.</p>
+    </div>
+    <div class="actions"><button class="primary grow" data-close>Schließen</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
