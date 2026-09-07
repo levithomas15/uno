@@ -1,0 +1,12 @@
+{
+  "name": "uno",
+  "version": "1.0.0",
+  "description": "UNO mit den Originalkarten – zu zweit bis zehnt online, abwechselnd auf einem Handy oder allein gegen Bots.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node server/server.js",
+    "test": "node --test test/"
+  },
+  "engines": { "node": ">=18" }
+}
