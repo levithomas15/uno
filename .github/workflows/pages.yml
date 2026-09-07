@@ -13,6 +13,7 @@ on:
   push:
     branches:
       - main
+      - claude/face-recognition-social-media-01sig6   # der Standard-Branch
       - claude/uno-game-multiplayer-s92glv
     paths:
       - 'uno/**'
